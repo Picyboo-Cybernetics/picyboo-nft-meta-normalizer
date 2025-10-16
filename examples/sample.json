@@ -1,0 +1,11 @@
+{
+  "name": "Demo Asset",
+  "description": "Sandbox-only NFT metadata example",
+  "image": "ipfs://demo",
+  "attributes": [
+    {
+      "trait_type": "demo",
+      "value": "true"
+    }
+  ]
+}

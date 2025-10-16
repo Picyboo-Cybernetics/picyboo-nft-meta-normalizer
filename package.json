@@ -1,0 +1,20 @@
+{
+  "name": "picyboo-nft-meta-normalizer",
+  "version": "0.1.0",
+  "description": "PICYBOO\u00ae NFT metadata normalizer (demo).",
+  "bin": {
+    "pbnft": "bin/cli.js"
+  },
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "picyboo",
+    "nft",
+    "metadata",
+    "normalize",
+    "sha256"
+  ],
+  "scripts": {
+    "start": "node bin/cli.js"
+  }
+}
