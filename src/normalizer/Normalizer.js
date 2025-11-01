@@ -1,21 +1,21 @@
-import { deepClone } from '../utils/clone.js';
-import { createContentHash } from '../utils/hash.js';
-import { NormalizationError } from './errors.js';
-import { compileSchema } from '../validators/schemaValidator.js';
+import { deepClone } from '../utils/clone.js'
+import { createContentHash } from '../utils/hash.js'
+import { NormalizationError } from './errors.js'
+import { compileSchema } from '../validators/schemaValidator.js'
 
 export class Normalizer {
-  constructor(profile) {
+  constructor (profile) {
     if (!profile || typeof profile !== 'object') {
-      throw new NormalizationError('Profile is required', { code: 'PROFILE_MISSING' });
+      throw new NormalizationError('Profile is required', { code: 'PROFILE_MISSING' })
     }
-    this.profile = profile;
-    this.outputValidator = profile.schema ? compileSchema(profile.schema) : null;
-    this.inputValidator = profile.inputSchema ? compileSchema(profile.inputSchema) : null;
+    this.profile = profile
+    this.outputValidator = profile.schema ? compileSchema(profile.schema) : null
+    this.inputValidator = profile.inputSchema ? compileSchema(profile.inputSchema) : null
   }
 
-  normalize(raw, options = {}) {
+  normalize (raw, options = {}) {
     if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
-      throw new NormalizationError('Metadata input must be an object', { code: 'INVALID_INPUT_TYPE' });
+      throw new NormalizationError('Metadata input must be an object', { code: 'INVALID_INPUT_TYPE' })
     }
 
     const opts = {
@@ -23,49 +23,49 @@ export class Normalizer {
       includeMeta: options.includeMeta ?? false,
       source: options.source ?? 'unspecified',
       timestamp: options.timestamp ?? new Date().toISOString()
-    };
+    }
 
     if (this.inputValidator) {
-      this.inputValidator(raw);
+      this.inputValidator(raw)
     }
 
     const state = {
       raw,
       result: this.profile.template ? deepClone(this.profile.template) : {},
       diagnostics: []
-    };
+    }
 
     const context = {
       profile: this.profile,
       options: opts,
       addDiagnostic: (diagnostic) => {
-        if (!diagnostic) return;
+        if (!diagnostic) return
         state.diagnostics.push({
           ...diagnostic,
           timestamp: diagnostic?.timestamp ?? opts.timestamp
-        });
+        })
       }
-    };
+    }
 
     for (const transformer of this.profile.transformers ?? []) {
       try {
-        transformer(state, context);
+        transformer(state, context)
       } catch (error) {
         throw new NormalizationError('Transformer execution failed', {
           code: 'TRANSFORMER_ERROR',
           cause: error
-        });
+        })
       }
     }
 
-    const output = deepClone(state.result);
+    const output = deepClone(state.result)
 
     if (this.outputValidator) {
-      this.outputValidator(output);
+      this.outputValidator(output)
     }
 
     if (opts.hash) {
-      output.hash = createContentHash({ ...output, hash: undefined });
+      output.hash = createContentHash({ ...output, hash: undefined })
     }
 
     if (opts.includeMeta) {
@@ -77,9 +77,9 @@ export class Normalizer {
         source: opts.source,
         timestamp: opts.timestamp,
         diagnostics: state.diagnostics
-      };
+      }
     }
 
-    return output;
+    return output
   }
 }

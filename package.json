@@ -15,6 +15,10 @@
     "schema",
     "cli"
   ],
+  "engines": {
+    "node": "20.x",
+    "npm": "10.x"
+  },
   "scripts": {
     "start": "node bin/cli.js",
     "lint": "eslint .",
