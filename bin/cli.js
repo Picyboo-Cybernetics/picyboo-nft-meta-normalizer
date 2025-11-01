@@ -1,18 +1,18 @@
 #!/usr/bin/env node
-import { program } from 'commander';
-import { promises as fs } from 'fs';
-import path from 'path';
-import process from 'process';
-import fetch from 'node-fetch';
-import YAML from 'yaml';
-import { Normalizer, defaultProfile } from '../src/index.js';
+import { program } from 'commander'
+import { promises as fs } from 'fs'
+import path from 'path'
+import process from 'process'
+import fetch from 'node-fetch'
+import YAML from 'yaml'
+import { Normalizer, defaultProfile } from '../src/index.js'
 
-const VERSION = '0.2.0';
+const VERSION = '0.2.0'
 
 program
   .name('pbnft')
   .description('PICYBOO NFT metadata normalizer (proof-of-use tooling)')
-  .version(VERSION);
+  .version(VERSION)
 
 program
   .command('normalize')
@@ -29,22 +29,22 @@ program
   .action(async (inputs, options) => {
     try {
       if (options.profile !== 'default') {
-        throw new Error(`Unsupported profile: ${options.profile}`);
+        throw new Error(`Unsupported profile: ${options.profile}`)
       }
 
-      const format = (options.format || 'json').toLowerCase();
+      const format = (options.format || 'json').toLowerCase()
       if (!['json', 'yaml'].includes(format)) {
-        throw new Error(`Unsupported format: ${options.format}`);
+        throw new Error(`Unsupported format: ${options.format}`)
       }
 
-      const documents = [];
+      const documents = []
 
       if (options.stdin) {
         documents.push({
           id: 'stdin',
           source: 'stdin',
           payload: await readStdin()
-        });
+        })
       }
 
       if (options.fetch) {
@@ -52,40 +52,40 @@ program
           id: options.fetch,
           source: options.fetch,
           payload: await readRemote(options.fetch)
-        });
+        })
       }
 
       for (const input of inputs) {
-        const resolved = path.resolve(process.cwd(), input);
-        const stats = await statSafe(resolved);
+        const resolved = path.resolve(process.cwd(), input)
+        const stats = await statSafe(resolved)
         if (!stats) {
-          throw new Error(`Input not found: ${input}`);
+          throw new Error(`Input not found: ${input}`)
         }
         if (stats.isDirectory()) {
-          const files = await enumerateJsonFiles(resolved);
+          const files = await enumerateJsonFiles(resolved)
           for (const file of files) {
             documents.push({
               id: file,
               source: file,
               payload: await readJson(file)
-            });
+            })
           }
         } else {
           documents.push({
             id: resolved,
             source: resolved,
             payload: await readJson(resolved)
-          });
+          })
         }
       }
 
       if (documents.length === 0) {
-        throw new Error('No input documents supplied.');
+        throw new Error('No input documents supplied.')
       }
 
-      const normalizer = new Normalizer(defaultProfile);
-      const outputs = [];
-      const failures = [];
+      const normalizer = new Normalizer(defaultProfile)
+      const outputs = []
+      const failures = []
 
       for (const document of documents) {
         try {
@@ -93,144 +93,144 @@ program
             hash: options.hash,
             includeMeta: options.includeMeta,
             source: document.source
-          });
-          outputs.push({ ...document, normalized });
+          })
+          outputs.push({ ...document, normalized })
         } catch (error) {
-          failures.push({ document, error });
+          failures.push({ document, error })
         }
       }
 
       if (!options.validateOnly) {
-        await writeOutputs(outputs, { ...options, format });
+        await writeOutputs(outputs, { ...options, format })
       }
 
       if (!options.quiet) {
-        logSummary(outputs, failures, options.validateOnly);
+        logSummary(outputs, failures, options.validateOnly)
       }
 
       if (failures.length > 0) {
-        process.exitCode = 1;
+        process.exitCode = 1
         failures.forEach(({ document, error }) => {
-          console.error(`\n[error] ${document.source}`);
-          console.error(error.message);
+          console.error(`\n[error] ${document.source}`)
+          console.error(error.message)
           if (error.details) {
-            console.error(JSON.stringify(error.details, null, 2));
+            console.error(JSON.stringify(error.details, null, 2))
           }
-        });
+        })
       } else if (outputs.length && options.validateOnly) {
         outputs.forEach(({ normalized }) => {
-          process.stdout.write(serialize(normalized, format));
-        });
+          process.stdout.write(serialize(normalized, format))
+        })
       }
     } catch (error) {
-      console.error(error.message);
-      process.exitCode = 1;
+      console.error(error.message)
+      process.exitCode = 1
     }
-  });
+  })
 
 program.parseAsync().catch((error) => {
-  console.error(error.message);
-  process.exit(1);
-});
+  console.error(error.message)
+  process.exit(1)
+})
 
-async function readJson(file) {
-  const raw = await fs.readFile(file, 'utf8');
-  return JSON.parse(raw);
+async function readJson (file) {
+  const raw = await fs.readFile(file, 'utf8')
+  return JSON.parse(raw)
 }
 
-async function enumerateJsonFiles(directory) {
-  const entries = await fs.readdir(directory, { withFileTypes: true });
-  const files = [];
+async function enumerateJsonFiles (directory) {
+  const entries = await fs.readdir(directory, { withFileTypes: true })
+  const files = []
   for (const entry of entries) {
-    const fullPath = path.join(directory, entry.name);
+    const fullPath = path.join(directory, entry.name)
     if (entry.isFile() && entry.name.toLowerCase().endsWith('.json')) {
-      files.push(fullPath);
+      files.push(fullPath)
     }
   }
-  return files;
+  return files
 }
 
-async function statSafe(p) {
+async function statSafe (p) {
   try {
-    return await fs.stat(p);
+    return await fs.stat(p)
   } catch (error) {
-    return null;
+    return null
   }
 }
 
-async function readStdin() {
-  const chunks = [];
+async function readStdin () {
+  const chunks = []
   return new Promise((resolve, reject) => {
-    process.stdin.setEncoding('utf8');
-    process.stdin.on('data', (chunk) => chunks.push(chunk));
+    process.stdin.setEncoding('utf8')
+    process.stdin.on('data', (chunk) => chunks.push(chunk))
     process.stdin.on('end', () => {
       try {
-        resolve(JSON.parse(chunks.join('')));
+        resolve(JSON.parse(chunks.join('')))
       } catch (error) {
-        reject(error);
+        reject(error)
       }
-    });
-    process.stdin.on('error', reject);
-  });
+    })
+    process.stdin.on('error', reject)
+  })
 }
 
-async function readRemote(url) {
-  const response = await fetch(url);
+async function readRemote (url) {
+  const response = await fetch(url)
   if (!response.ok) {
-    throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+    throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`)
   }
-  return response.json();
+  return response.json()
 }
 
-async function writeOutputs(outputs, options) {
+async function writeOutputs (outputs, options) {
   if (outputs.length === 0) {
-    return;
+    return
   }
 
   if (!options.output) {
     outputs.forEach(({ normalized }, index) => {
-      const serialized = serialize(normalized, options.format);
-      process.stdout.write(serialized);
+      const serialized = serialize(normalized, options.format)
+      process.stdout.write(serialized)
       if (index < outputs.length - 1) {
-        process.stdout.write('\n');
+        process.stdout.write('\n')
       }
-    });
-    return;
+    })
+    return
   }
 
-  const destination = path.resolve(process.cwd(), options.output);
+  const destination = path.resolve(process.cwd(), options.output)
   if (outputs.length > 1) {
-    await fs.mkdir(destination, { recursive: true });
+    await fs.mkdir(destination, { recursive: true })
     await Promise.all(
       outputs.map(async ({ normalized, source }) => {
-        const filename = path.basename(source, path.extname(source)) || 'normalized';
-        const serialized = serialize(normalized, options.format);
-        const ext = options.format === 'yaml' ? '.yml' : '.json';
-        const target = path.join(destination, `${filename}${ext}`);
-        await fs.writeFile(target, serialized, 'utf8');
+        const filename = path.basename(source, path.extname(source)) || 'normalized'
+        const serialized = serialize(normalized, options.format)
+        const ext = options.format === 'yaml' ? '.yml' : '.json'
+        const target = path.join(destination, `${filename}${ext}`)
+        await fs.writeFile(target, serialized, 'utf8')
       })
-    );
+    )
   } else {
-    const serialized = serialize(outputs[0].normalized, options.format);
-    await fs.mkdir(path.dirname(destination), { recursive: true });
-    await fs.writeFile(destination, serialized, 'utf8');
+    const serialized = serialize(outputs[0].normalized, options.format)
+    await fs.mkdir(path.dirname(destination), { recursive: true })
+    await fs.writeFile(destination, serialized, 'utf8')
   }
 }
 
-function serialize(payload, format) {
+function serialize (payload, format) {
   if (format === 'yaml') {
-    return `${YAML.stringify(payload).trim()}\n`;
+    return `${YAML.stringify(payload).trim()}\n`
   }
-  return `${JSON.stringify(payload, null, 2)}\n`;
+  return `${JSON.stringify(payload, null, 2)}\n`
 }
 
-function logSummary(outputs, failures, validateOnly) {
-  const total = outputs.length + failures.length;
-  const summaryParts = [`Processed: ${total}`];
-  summaryParts.push(`normalized: ${outputs.length}`);
-  summaryParts.push(`failed: ${failures.length}`);
+function logSummary (outputs, failures, validateOnly) {
+  const total = outputs.length + failures.length
+  const summaryParts = [`Processed: ${total}`]
+  summaryParts.push(`normalized: ${outputs.length}`)
+  summaryParts.push(`failed: ${failures.length}`)
   if (validateOnly) {
-    summaryParts.push('(validate only)');
+    summaryParts.push('(validate only)')
   }
-  console.error(summaryParts.join(' | '));
+  console.error(summaryParts.join(' | '))
 }

@@ -1,7 +1,10 @@
-import normalizedSchema from '../schemas/normalized-metadata.schema.json' assert { type: 'json' };
-import rawSchema from '../schemas/raw-metadata.schema.json' assert { type: 'json' };
-import { attributesTransformer } from '../transformers/attributes.js';
-import { coreFieldsTransformer } from '../transformers/coreFields.js';
+import { createRequire } from 'node:module'
+import { attributesTransformer } from '../transformers/attributes.js'
+import { coreFieldsTransformer } from '../transformers/coreFields.js'
+
+const require = createRequire(import.meta.url)
+const normalizedSchema = require('../schemas/normalized-metadata.schema.json')
+const rawSchema = require('../schemas/raw-metadata.schema.json')
 
 export const defaultProfile = {
   name: 'default',
@@ -16,4 +19,4 @@ export const defaultProfile = {
     attributes: []
   },
   transformers: [coreFieldsTransformer, attributesTransformer]
-};
+}
