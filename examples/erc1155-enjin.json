@@ -1,0 +1,9 @@
+{
+  "name": "Enjin Style Entry",
+  "description": "Attributes delivered as property map.",
+  "image": "https://examplecdn.invalid/erc1155.png",
+  "attributes": {
+    "rarity": "prototype",
+    "supply": 16
+  }
+}

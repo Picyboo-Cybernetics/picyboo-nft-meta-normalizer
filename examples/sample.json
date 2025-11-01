@@ -1,0 +1,10 @@
+{
+  "name": "Demo Asset",
+  "description": "Sandbox-only NFT metadata example.",
+  "image": "ipfs://demo-asset",
+  "external_url": "https://picyboo.example/demo",
+  "attributes": [
+    { "trait_type": "origin", "value": "lab" },
+    { "trait_type": "iteration", "value": 1 }
+  ]
+}

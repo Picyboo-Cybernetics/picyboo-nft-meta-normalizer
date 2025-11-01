@@ -1,0 +1,85 @@
+{
+  "$id": "https://picyboo.dev/schemas/normalized-metadata.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PICYBOO Normalized NFT Metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "description", "image", "attributes"],
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "image": {
+      "type": "string",
+      "default": ""
+    },
+    "animation_url": {
+      "type": "string"
+    },
+    "external_url": {
+      "type": "string"
+    },
+    "attributes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["trait_type", "value"],
+        "additionalProperties": false,
+        "properties": {
+          "trait_type": {
+            "type": "string"
+          },
+          "value": {
+            "type": ["string", "number", "boolean"]
+          },
+          "display_type": {
+            "type": "string"
+          }
+        }
+      },
+      "default": []
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "_meta": {
+      "type": "object",
+      "required": ["profile"],
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "type": "object",
+          "required": ["name", "version"],
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string" },
+            "version": { "type": "string" }
+          }
+        },
+        "source": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "level": {
+                "type": "string",
+                "enum": ["info", "warning", "error"]
+              },
+              "message": { "type": "string" },
+              "path": { "type": "string" },
+              "timestamp": { "type": "string", "format": "date-time" }
+            },
+            "required": ["level", "message"]
+          }
+        }
+      }
+    }
+  }
+}

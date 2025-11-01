@@ -1,0 +1,10 @@
+{
+  "name": "Sample ERC-721",
+  "description": "Metadata from a typical marketplace response.",
+  "image_url": "https://examplecdn.invalid/erc721.png",
+  "animation_url": null,
+  "attributes": [
+    { "trait_type": "Background", "value": "Blue" },
+    { "trait_type": "Energy", "value": 9000, "display_type": "number" }
+  ]
+}
